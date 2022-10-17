@@ -46,7 +46,7 @@ __curl() { curl -q -LSsf -o /dev/null -s -w "200" "$@" 2>/dev/null || return 10;
 __certbot() {
   [ -n "$SSL_CERT_BOT" ] && type -P certbot &>/dev/null || { export SSL_CERT_BOT="" && return 10; }
   certbot certonly --webroot -w "${WWW_ROOT_DIR:-/data/htdocs/www}" -d $DOMANNAME -d $DOMANNAME \
-    --put-all-related-files-into "$SSL_DIR" –key-path "$SSL_KEY" –fullchain-path "$SSL_CERT"
+    --put-all-related-files-into "$SSL_DIR" -key-path "$SSL_KEY" -fullchain-path "$SSL_CERT"
 }
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 __heath_check() {
@@ -117,7 +117,7 @@ if [ -n "$DOMANNAME" ]; then
 fi
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 # Create files
-sudo mkdir -p "/config" "/data" && chown -Rf x11user:x11user "/config" "/data"
+sudo mkdir -p "/config" "/data" && sudo chown -Rf x11user:x11user "/config" "/data"
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 if [ -d "/config/vscode" ]; then
   rm -Rf "$HOME/.vscode" && ln -sf "/config/vscode" "$HOME/.vscode"
