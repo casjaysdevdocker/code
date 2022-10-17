@@ -1,0 +1,26 @@
+#!/usr/bin/env bash
+# shellcheck shell=bash
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+##@Version           :  202210162304-git
+# @@Author           :  Jason Hempstead
+# @@Contact          :  jason@casjaysdev.com
+# @@License          :  WTFPL
+# @@ReadME           :  start-code --help
+# @@Copyright        :  Copyright: (c) 2022 Jason Hempstead, Casjays Developments
+# @@Created          :  Sunday, Oct 16, 2022 23:04 EDT
+# @@File             :  start-code
+# @@Description      :
+# @@Changelog        :  New script
+# @@TODO             :  Better documentation
+# @@Other            :
+# @@Resource         :
+# @@Terminal App     :  no
+# @@sudo/root        :  no
+# @@Template         :  other/start-service
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+[ "$1" = "" ] && shift 1
+[ "$1" = " " ] && shift 1
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+WORK_DIR="${1:-/data}"
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+code -wn "$WORK_DIR"
