@@ -13,11 +13,11 @@ ENV LANG=en_US.utf8 \
   DEBIAN_FRONTEND="noninteractive" \
   TOR_BROWSER_VERSION="11.5.4"
 
-COPY ./bin/. /usr/local/bin/
-COPY ./config/. ${DEFAULT_CONF_DIR}/
-COPY ./data/. ${DEFAULT_DATA_DIR}/
+COPY ./rootfs/. /
 
-RUN set -ex;   rm -Rf "/etc/apt/sources.list" ;   mkdir -p "${DEFAULT_DATA_DIR}" "${DEFAULT_CONF_DIR}" "${DEFAULT_TEMPLATE_DIR}" "/etc/sudoers.d" "/tmp/tor-profile"; \
+RUN set -ex; \
+  rm -Rf "/etc/apt/sources.list" ; \
+  mkdir -p "${DEFAULT_DATA_DIR}" "${DEFAULT_CONF_DIR}" "${DEFAULT_TEMPLATE_DIR}" "/etc/sudoers.d" "/tmp/tor-profile"; \
   echo 'export DEBIAN_FRONTEND="noninteractive"' >"/etc/profile.d/apt.sh" && chmod 755 "/etc/profile.d/apt.sh" && \
   echo "deb http://deb.debian.org/debian ${DEBIAN_VERSION} main contrib non-free" >>"/etc/apt/sources.list" ; \
   echo "deb http://deb.debian.org/debian ${DEBIAN_VERSION}-updates main contrib non-free" >>"/etc/apt/sources.list" ; \
@@ -39,16 +39,17 @@ RUN set -ex;   rm -Rf "/etc/apt/sources.list" ;   mkdir -p "${DEFAULT_DATA_DIR}"
   wget -qO- https://packages.microsoft.com/keys/microsoft.asc | gpg --dearmor > packages.microsoft.gpg && \
   install -D -o root -g root -m 644 packages.microsoft.gpg /etc/apt/keyrings/packages.microsoft.gpg && \
   echo "deb [arch=amd64,arm64,armhf signed-by=/etc/apt/keyrings/packages.microsoft.gpg] https://packages.microsoft.com/repos/code stable main" >"/etc/apt/sources.list.d/vscode.list" && \
-  apt-get update -yy && apt-get upgrade -yy && apt-get install -yy code -yy && \
-  useradd --shell /bin/bash --create-home --home-dir /home/x11user x11user && \
+  apt-get update -yy && apt-get upgrade -yy && apt-get install -yy code -yy
+
+RUN useradd --shell /bin/bash --create-home --home-dir /home/x11user x11user && \
   usermod -a -G audio,video,sudo,tty,dialout,cdrom,floppy,audio,dip,video,plugdev x11user && \
-  echo "x11user ALL=(ALL) NOPASSWD: ALL" >"/etc/sudoers.d/x11user" && \
-  apt-get clean
+  echo "x11user ALL=(ALL) NOPASSWD: ALL" >"/etc/sudoers.d/x11user"
 
 RUN sudo -u x11user setup-code.sh && \
   chown -Rf x11user:x11user "/home/x11user"
 
 RUN echo 'Running cleanup' ; \
+  apt-get clean && \
   update-alternatives --install /bin/sh sh /bin/bash 1 ; \
   rm -Rf /usr/share/doc/* /usr/share/info/* packages.microsoft.gpg ; \
   rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/* ; \
@@ -111,11 +112,10 @@ ENV LANG=en_US.utf8 \
 USER x11user
 WORKDIR /home/x11user
 
-VOLUME [ "/data", "/tmp/.X11-unix", "${HOME}/.Xauthority", ]
+VOLUME [ "/config", "/data", "/tmp/.X11-unix", "$HOME/.Xauthority", ]
 
 EXPOSE $EXPOSE_PORTS
 
 CMD [ "$@" ]
 ENTRYPOINT [ "tini", "-p", "SIGTERM", "--", "/usr/local/bin/entrypoint-code.sh" ]
 HEALTHCHECK --start-period=1m --interval=2m --timeout=3s CMD [ "/usr/local/bin/entrypoint-code.sh", "healthcheck" ]
-

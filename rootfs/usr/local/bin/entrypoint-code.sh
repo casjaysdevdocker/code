@@ -100,7 +100,7 @@ export SSL_CONTAINER_DIR SSL_CERT_BOT DISPLAY
 [ -f "/config/.env.sh" ] && . "/config/.env.sh"
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 # Set timezone
-[ -n "${TZ}" ] && echo "${TZ}" | sudo tee "/etc/timezone" >/dev/null >/dev/null
+[ -n "${TZ}" ] && echo "${TZ}" | sudo tee "/etc/timezone" >/dev/null
 [ -f "/usr/share/zoneinfo/${TZ}" ] && sudo ln -sf "/usr/share/zoneinfo/${TZ}" "/etc/localtime"
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 # Set hostname
@@ -130,8 +130,8 @@ if [ -d "/config/code" ]; then
 else
   mv -fv "$HOME/.config/Code" "/config/code" && ln -sf "/config/code" "$HOME/.config/Code"
 fi
-
-# Fic permissions
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+# Fix permissions
 sudo chown -Rf x11user:x11user "/data" "/config"
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 case "$1" in
@@ -144,7 +144,7 @@ case "$1" in
   ;;
 
 healthcheck) # Docker healthcheck
-  __heath_check || exitCode=10
+  __heath_check "code" || exitCode=10
   exit ${exitCode:-$?}
   ;;
 

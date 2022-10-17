@@ -97,4 +97,3 @@ code --install-extension "yinfei.luahelper" --force
 code --install-extension "yzhang.markdown-all-in-one" --force
 code --install-extension "ZainChen.json" --force
 curl -q -LSsf "https://github.com/casjay/vs-code/raw/main/settings-linux.json" -o "$HOME/.config/Code/User/settings.json"
-
