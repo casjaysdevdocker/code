@@ -117,21 +117,18 @@ if [ -n "$DOMANNAME" ]; then
 fi
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 # Create files
-mkdir -p "/config" "/data"
+sudo mkdir -p "/config" "/data" && chown -Rf x11user:x11user "/config" "/data"
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 if [ -d "/config/vscode" ]; then
-  rm -Rf "$HOME/.vscode"
-  ln -sf "/config/vscode" "$HOME/.vscode"
+  rm -Rf "$HOME/.vscode" && ln -sf "/config/vscode" "$HOME/.vscode"
 else
-  mv -fv "$HOME/.vscode" "/config/vscode"
-  ln -sf "/config/vscode" "$HOME/.vscode"
+  mv -fv "$HOME/.vscode" "/config/vscode" && ln -sf "/config/vscode" "$HOME/.vscode"
 fi
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 if [ -d "/config/code" ]; then
-  rm -Rf "$HOME/.config/Code"
-  ln -sf "/config/code" "$HOME/.config/Code"
+  rm -Rf "$HOME/.config/Code" && ln -sf "/config/code" "$HOME/.config/Code"
 else
-  mv -fv "$HOME/.config/Code" "/config/code"
-  ln -sf "/config/code" "$HOME/.config/Code"
+  mv -fv "$HOME/.config/Code" "/config/code" && ln -sf "/config/code" "$HOME/.config/Code"
 fi
 
 # Fic permissions
