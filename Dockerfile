@@ -6,52 +6,36 @@ ARG DEFAULT_DATA_DIR="/usr/local/share/template-files/data" \
   DEFAULT_CONF_DIR="/usr/local/share/template-files/config" \
   DEFAULT_TEMPLATE_DIR="/usr/local/share/template-files/defaults"
 
+ARG PACK_LIST="bash sudo tini xorg x11-apps xz-utils iproute2"
+
 ENV LANG=en_US.utf8 \
+  ENV=ENV=~/.bashrc \
   TZ="America/New_York" \
-  SHELL="/bin/bash" \
+  SHELL="/bin/sh" \
   TERM="xterm-256color" \
-  DEBIAN_FRONTEND="noninteractive" \
-  TOR_BROWSER_VERSION="11.5.4"
+  TIMEZONE="${TZ:-$TIMEZONE}" \
+  HOSTNAME="casjaysdev-code" \
+  DEBIAN_FRONTEND="noninteractive"
 
 COPY ./rootfs/. /
 
-RUN set -ex; \
-  rm -Rf "/etc/apt/sources.list" ; \
-  mkdir -p "${DEFAULT_DATA_DIR}" "${DEFAULT_CONF_DIR}" "${DEFAULT_TEMPLATE_DIR}" "/etc/sudoers.d" "/tmp/tor-profile"; \
+RUN set -ex;   rm -Rf "/etc/apt/sources.list" ;   mkdir -p "${DEFAULT_DATA_DIR}" "${DEFAULT_CONF_DIR}" "${DEFAULT_TEMPLATE_DIR}" "/etc/sudoers.d" "/tmp/tor-profile"; \
   echo 'export DEBIAN_FRONTEND="noninteractive"' >"/etc/profile.d/apt.sh" && chmod 755 "/etc/profile.d/apt.sh" && \
   echo "deb http://deb.debian.org/debian ${DEBIAN_VERSION} main contrib non-free" >>"/etc/apt/sources.list" ; \
   echo "deb http://deb.debian.org/debian ${DEBIAN_VERSION}-updates main contrib non-free" >>"/etc/apt/sources.list" ; \
   echo "deb http://deb.debian.org/debian-security/ ${DEBIAN_VERSION}-security main contrib non-free" >>"/etc/apt/sources.list" ; \
-  apt-get update -yy && apt-get upgrade -yy && apt-get install -yy \
-  apt-transport-https \
-  bash \
-  sudo \
-  tini \
-  xorg \
-  x11-apps \
-  xz-utils \
-  wget \
-  gpg \
-  gpg \
-  wget \
-  curl \
-  iproute2 && \
-  wget -qO- https://packages.microsoft.com/keys/microsoft.asc | gpg --dearmor > packages.microsoft.gpg && \
-  install -D -o root -g root -m 644 packages.microsoft.gpg /etc/apt/keyrings/packages.microsoft.gpg && \
-  echo "deb [arch=amd64,arm64,armhf signed-by=/etc/apt/keyrings/packages.microsoft.gpg] https://packages.microsoft.com/repos/code stable main" >"/etc/apt/sources.list.d/vscode.list" && \
-  apt-get update -yy && apt-get upgrade -yy && apt-get install -yy code -yy
-
-RUN useradd --shell /bin/bash --create-home --home-dir /home/x11user x11user && \
+  apt-get update -yy && apt-get upgrade -yy && apt-get install -yy ${PACK_LIST} && \
+  useradd --shell /bin/bash --create-home --home-dir /home/x11user x11user && \
   usermod -a -G audio,video,sudo,tty,dialout,cdrom,floppy,audio,dip,video,plugdev x11user && \
   echo "x11user ALL=(ALL) NOPASSWD: ALL" >"/etc/sudoers.d/x11user"
 
-RUN sudo -u x11user setup-code.sh && \
+RUN installScript && \
   chown -Rf x11user:x11user "/home/x11user"
 
 RUN echo 'Running cleanup' ; \
-  apt-get clean && \
   update-alternatives --install /bin/sh sh /bin/bash 1 ; \
-  rm -Rf /usr/share/doc/* /usr/share/info/* packages.microsoft.gpg ; \
+  apt-get clean ; \
+  rm -Rf /usr/share/doc/* /usr/share/info/* ; \
   rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/* ; \
   rm -Rf /usr/local/bin/.gitkeep /config /data /var/lib/apt/lists/* ; \
   rm -rf /lib/systemd/system/multi-user.target.wants/* ; \
@@ -61,20 +45,25 @@ RUN echo 'Running cleanup' ; \
   rm -rf /lib/systemd/system/sockets.target.wants/*initctl* ; \
   rm -rf /lib/systemd/system/sysinit.target.wants/systemd-tmpfiles-setup* ; \
   rm -rf /lib/systemd/system/systemd-update-utmp* ; \
-  if [ -d "/lib/systemd/system/sysinit.target.wants" ]; then cd "/lib/systemd/system/sysinit.target.wants" ; fi
+  if [ -d "/lib/systemd/system/sysinit.target.wants" ]; then cd "/lib/systemd/system/sysinit.target.wants" && rm Dockerfile
+Dockerfile.341313.bak
+LICENSE.md
+README.md
+rootfs ; fi
 
-#FROM scratch
+FROM scratch
 
-ARG PHP_SERVER="php" \
-  NODE_VERSION="14" \
-  NODE_MANAGER="system" \
+ARG \
   SERVICE_PORT="" \
-  EXPOSE_PORTS="" \
+  EXPOSE_PORTS="1-65535" \
+  PHP_SERVER="code" \
+  NODE_VERSION="system" \
+  NODE_MANAGER="system" \
+  BUILD_VERSION="latest" \
   LICENSE="MIT" \
   IMAGE_NAME="code" \
-  BUILD_VERSION="latest" \
-  TIMEZONE="America/New_York" \
-  BUILD_DATE="2022-10-15"
+  BUILD_DATE="Thu Oct 20 05:26:23 PM EDT 2022" \
+  TIMEZONE="America/New_York"
 
 LABEL maintainer="CasjaysDev <docker-admin@casjaysdev.com>" \
   org.opencontainers.image.vendor="CasjaysDev" \
@@ -107,15 +96,16 @@ ENV LANG=en_US.utf8 \
   HOSTNAME="casjaysdev-${IMAGE_NAME}" \
   USER="x11user"
 
-#COPY --from=build /. /
+COPY --from=build /. /
 
 USER x11user
 WORKDIR /home/x11user
 
-VOLUME [ "/config", "/data", "/tmp/.X11-unix", "$HOME/.Xauthority", ]
+VOLUME [ "/tmp/.X11-unix", "$HOME/.Xauthority", ]
 
 EXPOSE $EXPOSE_PORTS
 
-CMD [ "$@" ]
-ENTRYPOINT [ "tini", "-p", "SIGTERM", "--", "/usr/local/bin/entrypoint-code.sh" ]
-HEALTHCHECK --start-period=1m --interval=2m --timeout=3s CMD [ "/usr/local/bin/entrypoint-code.sh", "healthcheck" ]
+#CMD [ "" ]
+ENTRYPOINT [ "tini", "-p", "SIGTERM", "--", "/usr/local/bin/entrypoint.sh" ]
+HEALTHCHECK --start-period=1m --interval=2m --timeout=3s CMD [ "/usr/local/bin/entrypoint.sh", "healthcheck" ]
+
