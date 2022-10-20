@@ -12,8 +12,8 @@
 # @@Description      :  script to start code
 # @@Changelog        :  New script
 # @@TODO             :  Better documentation
-# @@Other            :  
-# @@Resource         :  
+# @@Other            :
+# @@Resource         :
 # @@Terminal App     :  no
 # @@sudo/root        :  no
 # @@Template         :  other/start-service
@@ -72,7 +72,7 @@ CONTAINER_IP_ADDRESS="$(ip a 2>/dev/null | grep 'inet' | grep -v '127.0.0.1' | a
 # Overwrite variables
 #SERVICE_PORT=""
 SERVICE_NAME="code"
-SERVICE_COMMAND="$SERVICE_NAME"
+SERVICE_COMMAND="$SERVICE_NAME -wn"
 export exec_message="Starting $SERVICE_NAME on $CONTAINER_IP_ADDRESS:$SERVICE_PORT"
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 # Pre copy commands
@@ -115,7 +115,8 @@ fi
 [ -f "/config/.env.sh" ] && . "/config/.env.sh"
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 # Actions based on env
-
+[ "$1" = "" ] && shift 1
+[ "$1" = " " ] && shift 1
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 # begin main app
 case "$1" in
@@ -144,7 +145,7 @@ certbot)
     echo "$SERVICE_NAME is running"
   else
     touch "/tmp/$SERVICE_NAME.pid"
-    __exec_command "$SERVICE_COMMAND" || rm -Rf "/tmp/$SERVICE_NAME.pid"
+    __exec_command "$SERVICE_COMMAND" "${@:-/data}" || rm -Rf "/tmp/$SERVICE_NAME.pid"
   fi
   ;;
 esac

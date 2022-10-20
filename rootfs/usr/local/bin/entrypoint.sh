@@ -12,8 +12,8 @@
 # @@Description      :  entrypoint point for code
 # @@Changelog        :  New script
 # @@TODO             :  Better documentation
-# @@Other            :  
-# @@Resource         :  
+# @@Other            :
+# @@Resource         :
 # @@Terminal App     :  no
 # @@sudo/root        :  no
 # @@Template         :  other/docker-entrypoint
@@ -55,7 +55,7 @@ __heath_check() {
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 __start_all_services() {
   echo "$service_message"
-  bash -l
+  start-code.sh "$@"
   return $?
 }
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -228,7 +228,18 @@ unset create_data create_data_name create_config create_config_name create_conf 
 [ -f "/config/.docker_has_run" ] || { [ -d "/config" ] && echo "Initialized on: $(date)" >"/config/.docker_has_run"; }
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 # Additional commands
-
+if [ -d "/config/vscode" ]; then
+  rm -Rf "/home/x11user/.vscode" && ln -sf "/config/vscode" "/home/x11user/.vscode"
+else
+  mv -fv "/home/x11user/.vscode" "/config/vscode" && ln -sf "/config/vscode" "/home/x11user/.vscode"
+fi
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+if [ -d "/config/code" ]; then
+  rm -Rf "/home/x11user/.config/Code" && ln -sf "/config/code" "/home/x11user/.config/Code"
+else
+  mv -fv "/home/x11user/.config/Code" "/config/code" && ln -sf "/config/code" "/home/x11user/.config/Code"
+fi
+sudo chown -Rf x11user:x11user "/data" "/config" "/home/x11user"
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 # Show message
 echo "Container ip address is: $CONTAINER_IP_ADDRESS"
@@ -268,13 +279,8 @@ certbot)
   ;;
 
 *) # Execute primary command
-  if [ $# -eq 0 ]; then
-    __start_all_services
-    exit ${exitCode:-$?}
-  else
-    __exec_command "$@"
-    exitCode=$?
-  fi
+  __start_all_services "$@"
+  exit ${exitCode:-$?}
   ;;
 esac
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

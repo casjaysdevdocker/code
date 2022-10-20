@@ -6,7 +6,7 @@ ARG DEFAULT_DATA_DIR="/usr/local/share/template-files/data" \
   DEFAULT_CONF_DIR="/usr/local/share/template-files/config" \
   DEFAULT_TEMPLATE_DIR="/usr/local/share/template-files/defaults"
 
-ARG PACK_LIST="bash sudo tini xorg x11-apps xz-utils iproute2"
+ARG PACK_LIST="xorg x11-apps xz-utils"
 
 ENV LANG=en_US.utf8 \
   ENV=ENV=~/.bashrc \
@@ -27,9 +27,13 @@ RUN set -ex;   rm -Rf "/etc/apt/sources.list" ;   mkdir -p "${DEFAULT_DATA_DIR}"
   apt-get update -yy && apt-get upgrade -yy && apt-get install -yy ${PACK_LIST} && \
   useradd --shell /bin/bash --create-home --home-dir /home/x11user x11user && \
   usermod -a -G audio,video,sudo,tty,dialout,cdrom,floppy,audio,dip,video,plugdev x11user && \
-  echo "x11user ALL=(ALL) NOPASSWD: ALL" >"/etc/sudoers.d/x11user"
+  echo "x11user ALL=(ALL) NOPASSWD: ALL" >"/etc/sudoers.d/x11user" && \
+  wget -qO- https://packages.microsoft.com/keys/microsoft.asc | gpg --dearmor >/tmp/packages.microsoft.gpg && \
+  install -D -o root -g root -m 644 /tmp/packages.microsoft.gpg /etc/apt/keyrings/packages.microsoft.gpg && \
+  echo "deb [arch=amd64,arm64,armhf signed-by=/etc/apt/keyrings/packages.microsoft.gpg] https://packages.microsoft.com/repos/code stable main" >"/etc/apt/sources.list.d/vscode.list" && \
+  apt-get update -yy && apt-get upgrade -yy && apt-get install -yy code -yy
 
-RUN installScript && \
+RUN sudo -u x11user setup-code.sh && \
   chown -Rf x11user:x11user "/home/x11user"
 
 RUN echo 'Running cleanup' ; \
@@ -45,11 +49,7 @@ RUN echo 'Running cleanup' ; \
   rm -rf /lib/systemd/system/sockets.target.wants/*initctl* ; \
   rm -rf /lib/systemd/system/sysinit.target.wants/systemd-tmpfiles-setup* ; \
   rm -rf /lib/systemd/system/systemd-update-utmp* ; \
-  if [ -d "/lib/systemd/system/sysinit.target.wants" ]; then cd "/lib/systemd/system/sysinit.target.wants" && rm Dockerfile
-Dockerfile.341313.bak
-LICENSE.md
-README.md
-rootfs ; fi
+  if [ -d "/lib/systemd/system/sysinit.target.wants" ]; then cd "/lib/systemd/system/sysinit.target.wants" && rm $(ls | grep -v systemd-tmpfiles-setup) ; fi
 
 FROM scratch
 
@@ -62,7 +62,7 @@ ARG \
   BUILD_VERSION="latest" \
   LICENSE="MIT" \
   IMAGE_NAME="code" \
-  BUILD_DATE="Thu Oct 20 05:26:23 PM EDT 2022" \
+  BUILD_DATE="Thu Oct 20 05:32:58 PM EDT 2022" \
   TIMEZONE="America/New_York"
 
 LABEL maintainer="CasjaysDev <docker-admin@casjaysdev.com>" \
@@ -94,7 +94,8 @@ ENV LANG=en_US.utf8 \
   TZ="${TZ:-America/New_York}" \
   TIMEZONE="${TZ:-$TIMEZONE}" \
   HOSTNAME="casjaysdev-${IMAGE_NAME}" \
-  USER="x11user"
+  USER="x11user" \
+  HOME="/home/x11user"
 
 COPY --from=build /. /
 
@@ -108,4 +109,3 @@ EXPOSE $EXPOSE_PORTS
 #CMD [ "" ]
 ENTRYPOINT [ "tini", "-p", "SIGTERM", "--", "/usr/local/bin/entrypoint.sh" ]
 HEALTHCHECK --start-period=1m --interval=2m --timeout=3s CMD [ "/usr/local/bin/entrypoint.sh", "healthcheck" ]
-
