@@ -44,7 +44,7 @@ ARG DEFAULT_TEMPLATE_DIR
 ARG DISTRO_VERSION
 
 ARG PACK_LIST="bash bash-completion git curl wget sudo unzip tini xz-utils iproute2 locales procps net-tools bsd-mailx  xorg x11-apps \
-  "
+  gpg"
 
 ENV ENV=~/.bashrc
 ENV SHELL="/bin/sh"
