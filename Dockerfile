@@ -13,7 +13,7 @@ ARG DEFAULT_TEMPLATE_DIR="/usr/local/share/template-files/defaults"
 
 ARG IMAGE_REPO="debian"
 ARG IMAGE_VERSION="latest"
-ARG CONTAINER_VERSION="${IMAGE_VERSION}"
+ARG CONTAINER_VERSION="latest"
 
 ARG SERVICE_PORT=""
 ARG EXPOSE_PORTS="1-65535"
@@ -43,7 +43,7 @@ ARG DEFAULT_CONF_DIR
 ARG DEFAULT_TEMPLATE_DIR
 ARG DISTRO_VERSION
 
-ARG PACK_LIST="bash bash-completion git curl wget sudo unzip tini xz-utils iproute2 locales procps net-tools bsd-mailx  xorg x11-apps\
+ARG PACK_LIST="bash bash-completion git curl wget sudo unzip tini xz-utils iproute2 locales procps net-tools bsd-mailx  xorg x11-apps \
   "
 
 ENV ENV=~/.bashrc
