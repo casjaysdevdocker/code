@@ -205,7 +205,7 @@ ARG DEFAULT_CONF_DIR
 ARG DEFAULT_TEMPLATE_DIR
 ARG DISTRO_VERSION
 
-LABEL maintainer="CasjaysDev <docker-admin@casjaysdev.com>"
+LABEL maintainer="CasjaysDev <docker-admin@casjaysdev.pro>"
 LABEL org.opencontainers.image.vendor="CasjaysDev"
 LABEL org.opencontainers.image.authors="CasjaysDev"
 LABEL org.opencontainers.image.vcs-type="Git"
